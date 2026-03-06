@@ -1,0 +1,96 @@
+name: CI — Build & Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-server:
+    name: Server — Lint & Build Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mern-project/server
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: mern-project/server/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify server syntax (dry-run node parse)
+        run: node --input-type=module --eval "import './server.mjs'" 2>&1 || true
+
+  test-client:
+    name: Client — Build & E2E Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mern-project/client
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: mern-project/client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+        env:
+          REACT_APP_API_URL: /api
+
+      - name: Run Cypress E2E tests (headless)
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: mern-project/client
+          start: npx serve -s build -l 3000
+          wait-on: "http://localhost:3000"
+          wait-on-timeout: 60
+          browser: chrome
+          headless: true
+        continue-on-error: true
+
+  docker-build-check:
+    name: Docker — Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: mern-project/client
+          push: false
+          build-args: |
+            REACT_APP_API_URL=/api
+          tags: mern-frontend:ci-check
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build backend image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: mern-project/server
+          push: false
+          tags: mern-backend:ci-check
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: mern-app
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: ${ECR_BACKEND}:${IMAGE_TAG}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5050
+          env:
+            - name: ATLAS_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mern-secret
+                  key: ATLAS_URI
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthcheck/
+              port: 5050
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthcheck/
+              port: 5050
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+      terminationGracePeriodSeconds: 30

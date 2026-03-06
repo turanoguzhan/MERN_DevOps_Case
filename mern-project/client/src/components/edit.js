@@ -10,11 +10,12 @@ export default function Edit() {
  });
  const params = useParams();
  const navigate = useNavigate();
+ const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5050";
 
  useEffect(() => {
    async function fetchData() {
      const id = params.id.toString();
-     const response = await fetch(`http://localhost:5050/record/${params.id.toString()}`);
+     const response = await fetch(`${API_URL}/record/${params.id.toString()}`);
 
      if (!response.ok) {
        const message = `An error has occurred: ${response.statusText}`;
@@ -53,7 +54,7 @@ export default function Edit() {
    };
 
    // This will send a post request to update the data in the database.
-   await fetch(`http://localhost:5050/record/${params.id}`, {
+   await fetch(`${API_URL}/record/${params.id}`, {
      method: "PATCH",
      body: JSON.stringify(editedPerson),
      headers: {

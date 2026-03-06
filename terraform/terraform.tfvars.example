@@ -1,0 +1,16 @@
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is gitignored — never commit real values
+
+aws_region         = "eu-central-1"
+project_name       = "mern"
+environment        = "production"
+budget_alert_email = "your-email@example.com"
+
+# EKS node configuration
+node_instance_type = "t3.medium"
+node_desired_size  = 2
+node_min_size      = 1
+node_max_size      = 4
+
+# Kubernetes version
+kubernetes_version = "1.29"

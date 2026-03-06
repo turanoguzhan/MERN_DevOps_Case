@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etl-job
+  namespace: mern-app
+spec:
+  schedule: "0 * * * *"    # Run every hour at minute 0
+  concurrencyPolicy: Forbid  # Don't start a new job if previous is still running
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: etl-job
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: etl
+              image: ${ECR_ETL}:${IMAGE_TAG}
+              imagePullPolicy: Always
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "100m"
+                  memory: "128Mi"

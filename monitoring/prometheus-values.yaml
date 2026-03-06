@@ -1,0 +1,98 @@
+# Helm values for kube-prometheus-stack
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+
+grafana:
+  adminUser: admin
+  adminPassword: ""  # Set via: kubectl create secret generic grafana-admin --from-literal=password=<your-password>
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+  persistence:
+    enabled: false  # Disable for cost saving; enable with PVC for production persistence
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: default
+          orgId: 1
+          folder: ""
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+  dashboards:
+    default:
+      kubernetes-cluster:
+        gnetId: 6417     # Kubernetes Cluster Overview
+        revision: 1
+        datasource: Prometheus
+      nodejs-dashboard:
+        gnetId: 11159    # Node.js Application Dashboard
+        revision: 1
+        datasource: Prometheus
+
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    storageSpec: {}  # Ephemeral storage (add PVC for production)
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    additionalScrapeConfigs:
+      - job_name: mern-backend
+        static_configs:
+          - targets:
+              - backend-service.mern-app.svc.cluster.local:5050
+        metrics_path: /metrics
+        scrape_interval: 15s
+
+alertmanager:
+  alertmanagerSpec:
+    storage: {}  # Ephemeral for demo; add PVC for production
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ["alertname", "namespace"]
+      group_wait: 10s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: default
+    receivers:
+      - name: default
+        # Configure email or Slack here
+        # slack_configs:
+        #   - api_url: 'https://hooks.slack.com/services/...'
+        #     channel: '#alerts'
+
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: false        # Not available in EKS managed control plane
+    configReloaders: true
+    general: true
+    k8s: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: true
+    kubeApiserverSlos: true
+    kubelet: true
+    kubeProxy: false   # Not available in EKS
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true

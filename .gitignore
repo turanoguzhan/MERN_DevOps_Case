@@ -1,0 +1,31 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+
+# React
+mern-project/client/build/
+
+# Environment files (never commit real secrets)
+.env
+.env.*
+!.env.example
+config.env
+mern-project/server/.env
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+!terraform/terraform.tfvars.example
+terraform/modules/eks/lbc-iam-policy.json
+
+# Misc
+*.log
+.idea/
+.vscode/
