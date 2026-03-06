@@ -10,7 +10,7 @@ env:
   EKS_CLUSTER_NAME: mern-cluster
 
 permissions:
-  id-token: write   # Required for OIDC authentication with AWS
+  id-token: write
   contents: read
 
 jobs:

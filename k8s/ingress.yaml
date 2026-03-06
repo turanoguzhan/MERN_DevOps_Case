@@ -9,14 +9,12 @@ metadata:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-path: /healthcheck/
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
-    # Rewrite /api/* → /* before forwarding to backend
     alb.ingress.kubernetes.io/actions.backend-rewrite: |
       {"type":"forward","targetGroupConfig":{"stickiness":{"enabled":false}}}
 spec:
   rules:
     - http:
         paths:
-          # API routes go to backend (strip /api prefix via nginx on the backend side)
           - path: /api
             pathType: Prefix
             backend:
@@ -24,7 +22,6 @@ spec:
                 name: backend-service
                 port:
                   number: 5050
-          # All other traffic goes to frontend
           - path: /
             pathType: Prefix
             backend:

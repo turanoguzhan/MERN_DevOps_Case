@@ -4,7 +4,7 @@ metadata:
   name: mern-app-alerts
   namespace: monitoring
   labels:
-    release: monitoring   # Must match the Helm release name for kube-prometheus-stack
+    release: monitoring 
 spec:
   groups:
     - name: mern-app.pods
