@@ -55,6 +55,8 @@ make install-alb-controller
 make monitoring
 ```
 
+See **[docs/explanation.md](docs/explanation.md)** for the explanation
+
 See **[docs/deployment.md](docs/deployment.md)** for the full step-by-step guide.
 
 See **[docs/architecture.md](docs/architecture.md)** for architecture diagrams.
